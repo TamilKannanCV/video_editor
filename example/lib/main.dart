@@ -223,11 +223,11 @@ class _VideoEditorState extends State<VideoEditor> {
                                   showGrid: false,
                                 ),
                                 AnimatedBuilder(
-                                  animation: _controller.video,
+                                  animation: _controller.videoPlayerController,
                                   builder: (_, __) => OpacityTransition(
                                     visible: !_controller.isPlaying,
                                     child: GestureDetector(
-                                      onTap: _controller.video.play,
+                                      onTap: _controller.videoPlayerController.play,
                                       child: Container(
                                         width: 40,
                                         height: 40,
@@ -367,9 +367,9 @@ class _VideoEditorState extends State<VideoEditor> {
   List<Widget> _trimSlider() {
     return [
       AnimatedBuilder(
-        animation: _controller.video,
+        animation: _controller.videoPlayerController,
         builder: (_, __) {
-          final duration = _controller.video.value.duration.inSeconds;
+          final duration = _controller.videoPlayerController.value.duration.inSeconds;
           final pos = _controller.trimPosition * duration;
           final start = _controller.minTrim * duration;
           final end = _controller.maxTrim * duration;

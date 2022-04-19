@@ -124,7 +124,7 @@ class VideoEditorController extends ChangeNotifier {
   double _videoHeight = 0;
 
   /// Get the [VideoPlayerController]
-  VideoPlayerController get video => _videoPlayerController;
+  VideoPlayerController get videoPlayerController => _videoPlayerController;
 
   /// Get the rotation of the video
   int get rotation => _rotation;

@@ -56,7 +56,7 @@ class _CoverSelectionState extends State<CoverSelection>
   void initState() {
     super.initState();
     _aspect = widget.controller.preferredCropAspectRatio ??
-        widget.controller.video.value.aspectRatio;
+        widget.controller.videoPlayerController.value.aspectRatio;
     _startTrim = widget.controller.startTrim;
     _endTrim = widget.controller.endTrim;
     widget.controller.addListener(_scaleRect);

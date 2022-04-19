@@ -15,7 +15,7 @@ class TransformData {
     Size layout,
     VideoEditorController controller,
   ) {
-    final double videoAspect = controller.video.value.aspectRatio;
+    final double videoAspect = controller.videoPlayerController.value.aspectRatio;
     final double relativeAspect = rect.width / rect.height;
 
     final double xScale = layout.width / rect.width;

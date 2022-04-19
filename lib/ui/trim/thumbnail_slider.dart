@@ -41,7 +41,7 @@ class _ThumbnailSliderState extends State<ThumbnailSlider> {
   @override
   void initState() {
     super.initState();
-    _aspect = widget.controller.video.value.aspectRatio;
+    _aspect = widget.controller.videoPlayerController.value.aspectRatio;
     widget.controller.addListener(_scaleRect);
 
     // init the widget with controller values
@@ -71,7 +71,7 @@ class _ThumbnailSliderState extends State<ThumbnailSlider> {
 
   Stream<List<Uint8List>> _generateThumbnails() async* {
     final String path = widget.controller.file!.path;
-    final int duration = widget.controller.video.value.duration.inMilliseconds;
+    final int duration = widget.controller.videoPlayerController.value.duration.inMilliseconds;
     final double eachPart = duration / _thumbnails;
     List<Uint8List> _byteList = [];
     for (int i = 1; i <= _thumbnails; i++) {

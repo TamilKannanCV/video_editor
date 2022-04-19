@@ -95,7 +95,7 @@ class _CoverViewerState extends State<CoverViewer> {
                     child: Center(
                         child: Stack(children: [
                       AspectRatio(
-                        aspectRatio: widget.controller.video.value.aspectRatio,
+                        aspectRatio: widget.controller.videoPlayerController.value.aspectRatio,
                         child: Image(
                           image: MemoryImage(selectedCover!.thumbData!),
                           alignment: Alignment.center,
@@ -103,7 +103,7 @@ class _CoverViewerState extends State<CoverViewer> {
                       ),
                       AspectRatio(
                           aspectRatio:
-                              widget.controller.video.value.aspectRatio,
+                              widget.controller.videoPlayerController.value.aspectRatio,
                           child: LayoutBuilder(
                             builder: (_, constraints) {
                               Size size = Size(
