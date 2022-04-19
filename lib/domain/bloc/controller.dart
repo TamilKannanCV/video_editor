@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit_config.dart';
-import 'package:ffmpeg_kit_flutter_min_gpl/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_min_gpl/statistics.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/statistics.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -56,8 +56,11 @@ class VideoEditorController extends ChangeNotifier {
   /// Style for [CropGridViewer]
   final CropGridStyle cropStyle;
 
-  /// Video from [File].
-  final File file;
+  ///Video from [File].
+  File? file;
+
+  ///Video from URL
+  String? url;
 
   /// Constructs a [VideoEditorController] that edits a video from a file.
   ///
@@ -68,7 +71,20 @@ class VideoEditorController extends ChangeNotifier {
     TrimSliderStyle? trimStyle,
     CoverSelectionStyle? coverStyle,
     CropGridStyle? cropStyle,
-  })  : _video = VideoPlayerController.file(file),
+  })  : _videoPlayerController = VideoPlayerController.file(file!),
+        _maxDuration = maxDuration ?? Duration.zero,
+        cropStyle = cropStyle ?? CropGridStyle(),
+        coverStyle = coverStyle ?? CoverSelectionStyle(),
+        trimStyle = trimStyle ?? TrimSliderStyle();
+
+  ///Constructs a [VideoEditorController] that edits a video from a file.
+  VideoEditorController.network(
+    this.url, {
+    Duration? maxDuration,
+    TrimSliderStyle? trimStyle,
+    CoverSelectionStyle? coverStyle,
+    CropGridStyle? cropStyle,
+  })  : _videoPlayerController = VideoPlayerController.network(url!),
         _maxDuration = maxDuration ?? Duration.zero,
         cropStyle = cropStyle ?? CropGridStyle(),
         coverStyle = coverStyle ?? CoverSelectionStyle(),
@@ -92,7 +108,7 @@ class VideoEditorController extends ChangeNotifier {
 
   Duration _trimEnd = Duration.zero;
   Duration _trimStart = Duration.zero;
-  final VideoPlayerController _video;
+  final VideoPlayerController _videoPlayerController;
 
   /// The max duration to trim the [file] video
   Duration _maxDuration;
@@ -108,22 +124,22 @@ class VideoEditorController extends ChangeNotifier {
   double _videoHeight = 0;
 
   /// Get the [VideoPlayerController]
-  VideoPlayerController get video => _video;
+  VideoPlayerController get video => _videoPlayerController;
 
   /// Get the rotation of the video
   int get rotation => _rotation;
 
   /// Get the [VideoPlayerController.value.initialized]
-  bool get initialized => _video.value.isInitialized;
+  bool get initialized => _videoPlayerController.value.isInitialized;
 
   /// Get the [VideoPlayerController.value.isPlaying]
-  bool get isPlaying => _video.value.isPlaying;
+  bool get isPlaying => _videoPlayerController.value.isPlaying;
 
   /// Get the [VideoPlayerController.value.position]
-  Duration get videoPosition => _video.value.position;
+  Duration get videoPosition => _videoPlayerController.value.position;
 
   /// Get the [VideoPlayerController.value.duration]
-  Duration get videoDuration => _video.value.duration;
+  Duration get videoDuration => _videoPlayerController.value.duration;
 
   /// Get the [Size] of the video
   Size get videoDimension =>
@@ -199,12 +215,12 @@ class VideoEditorController extends ChangeNotifier {
   /// Update the trim position depending on the [maxDuration] param
   /// Generate the default cover [_selectedCover]
   Future<void> initialize() async {
-    await _video.initialize().then((_) {
-      _videoWidth = _video.value.size.width;
-      _videoHeight = _video.value.size.height;
+    await _videoPlayerController.initialize().then((_) {
+      _videoWidth = _videoPlayerController.value.size.width;
+      _videoHeight = _videoPlayerController.value.size.height;
     });
-    _video.addListener(_videoListener);
-    _video.setLooping(true);
+    _videoPlayerController.addListener(_videoListener);
+    _videoPlayerController.setLooping(true);
 
     // if no [maxDuration] param given, maxDuration is the videoDuration
     _maxDuration = _maxDuration == Duration.zero ? videoDuration : _maxDuration;
@@ -224,18 +240,19 @@ class VideoEditorController extends ChangeNotifier {
 
   @override
   Future<void> dispose() async {
-    if (_video.value.isPlaying) await _video.pause();
-    _video.removeListener(_videoListener);
+    if (_videoPlayerController.value.isPlaying)
+      await _videoPlayerController.pause();
+    _videoPlayerController.removeListener(_videoListener);
     final executions = await FFmpegKit.listSessions();
     if (executions.isNotEmpty) await FFmpegKit.cancel();
-    _video.dispose();
+    _videoPlayerController.dispose();
     super.dispose();
   }
 
   void _videoListener() {
     final position = videoPosition;
     if (position < _trimStart || position >= _trimEnd) {
-      _video.seekTo(_trimStart);
+      _videoPlayerController.seekTo(_trimStart);
     }
   }
 
@@ -354,7 +371,7 @@ class VideoEditorController extends ChangeNotifier {
       {int timeMs = 0, int quality = 10}) async {
     final Uint8List? _thumbData = await VideoThumbnail.thumbnailData(
       imageFormat: ImageFormat.JPEG,
-      video: file.path,
+      video: file!.path,
       timeMs: timeMs,
       quality: quality,
     );
@@ -407,7 +424,7 @@ class VideoEditorController extends ChangeNotifier {
   Future<void> getMetaData(
       {required void Function(Map<dynamic, dynamic>? metadata)
           onCompleted}) async {
-    await FFprobeKit.getMediaInformationAsync(file.path, (session) async {
+    await FFprobeKit.getMediaInformationAsync(file!.path, (session) async {
       final information = session.getMediaInformation();
       onCompleted(information?.getAllProperties());
     });
@@ -453,7 +470,7 @@ class VideoEditorController extends ChangeNotifier {
     bool isFiltersEnabled = true,
   }) async {
     final String tempPath = outDir ?? (await getTemporaryDirectory()).path;
-    final String videoPath = file.path;
+    final String videoPath = file!.path;
     name ??= path.basenameWithoutExtension(videoPath);
     final int epoch = DateTime.now().millisecondsSinceEpoch;
     final String outputPath = "$tempPath/${name}_$epoch.$format";
@@ -561,7 +578,7 @@ class VideoEditorController extends ChangeNotifier {
     return await VideoThumbnail.thumbnailFile(
       imageFormat: ImageFormat.JPEG,
       thumbnailPath: (await getTemporaryDirectory()).path,
-      video: file.path,
+      video: file!.path,
       timeMs: selectedCoverVal?.timeMs ?? startTrim.inMilliseconds,
       quality: quality,
     );
@@ -605,7 +622,7 @@ class VideoEditorController extends ChangeNotifier {
       debugPrint("ERROR ON COVER EXTRACTION WITH VideoThumbnail LIBRARY");
       return;
     }
-    name ??= path.basenameWithoutExtension(file.path);
+    name ??= path.basenameWithoutExtension(file!.path);
     final int epoch = DateTime.now().millisecondsSinceEpoch;
     final String outputPath = "$tempPath/${name}_$epoch.$format";
 
