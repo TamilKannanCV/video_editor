@@ -72,7 +72,7 @@ class _ThumbnailSliderState extends State<ThumbnailSlider> {
 
   Stream<List<Uint8List>> _generateThumbnails() async* {
     final String path = (widget.controller.file == null)
-        ? url.toString()
+        ? widget.controller.url.toString()
         : widget.controller.file!.path;
     final int duration =
         widget.controller.videoPlayerController.value.duration.inMilliseconds;

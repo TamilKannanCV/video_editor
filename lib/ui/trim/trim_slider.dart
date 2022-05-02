@@ -172,13 +172,13 @@ class _TrimSliderState extends State<TrimSlider>
   void _createTrimRect() {
     _rect = Rect.fromPoints(
       Offset(
-          widget.controller.minTrim * _fullLayout.width +
-              widget.horizontalMargin,
-          0.0),
+        widget.controller.minTrim * _fullLayout.width + widget.horizontalMargin,
+        0.0,
+      ),
       Offset(
-          widget.controller.maxTrim * _fullLayout.width +
-              widget.horizontalMargin,
-          widget.height),
+        widget.controller.maxTrim * _fullLayout.width + widget.horizontalMargin,
+        widget.height,
+      ),
     );
   }
 
@@ -227,29 +227,33 @@ class _TrimSliderState extends State<TrimSlider>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return LayoutBuilder(builder: (_, contrainst) {
-      final Size trimLayout = Size(
-          contrainst.maxWidth - widget.horizontalMargin * 2,
-          contrainst.maxHeight);
-      final Size fullLayout = Size(
-          trimLayout.width * (_ratio! > 1 ? _ratio! : 1), contrainst.maxHeight);
-      _fullLayout = fullLayout;
-      if (_trimLayout != trimLayout) {
-        _trimLayout = trimLayout;
-        _createTrimRect();
-      }
+    return LayoutBuilder(
+      builder: (_, contrainst) {
+        final Size trimLayout = Size(
+            contrainst.maxWidth - widget.horizontalMargin * 2,
+            contrainst.maxHeight);
+        final Size fullLayout = Size(
+            trimLayout.width * (_ratio! > 1 ? _ratio! : 1),
+            contrainst.maxHeight);
+        _fullLayout = fullLayout;
+        if (_trimLayout != trimLayout) {
+          _trimLayout = trimLayout;
+          _createTrimRect();
+        }
 
-      return SizedBox(
+        return SizedBox(
           width: _fullLayout.width,
-          child: Stack(children: [
-            NotificationListener<ScrollNotification>(
-              child: SingleChildScrollView(
+          child: Stack(
+            children: [
+              NotificationListener<ScrollNotification>(
+                child: SingleChildScrollView(
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   child: Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: widget.horizontalMargin),
-                      child: Column(children: [
+                    margin: EdgeInsets.symmetric(
+                        horizontal: widget.horizontalMargin),
+                    child: Column(
+                      children: [
                         SizedBox(
                             height: widget.height,
                             width: _fullLayout.width,
@@ -260,39 +264,45 @@ class _TrimSliderState extends State<TrimSlider>
                         if (widget.child != null)
                           SizedBox(
                               width: _fullLayout.width, child: widget.child)
-                      ]))),
-              onNotification: (notification) {
-                _boundary.value = _TrimBoundaries.inside;
-                _updateControllerIsTrimming(true);
-                if (notification is ScrollEndNotification) {
-                  _thumbnailPosition = notification.metrics.pixels;
-                  _controllerSeekTo(_rect.left);
-                  _updateControllerIsTrimming(false);
-                  _updateControllerTrim();
-                }
-                return true;
-              },
-            ),
-            GestureDetector(
-              onHorizontalDragUpdate: _onHorizontalDragUpdate,
-              onHorizontalDragStart: _onHorizontalDragStart,
-              onHorizontalDragEnd: _onHorizontalDragEnd,
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedBuilder(
-                animation: Listenable.merge([widget.controller, _controller]),
-                builder: (_, __) {
-                  return CustomPaint(
-                    size: Size.fromHeight(widget.height),
-                    painter: TrimSliderPainter(
-                      _rect,
-                      _getTrimPosition(),
-                      widget.controller.trimStyle,
+                      ],
                     ),
-                  );
+                  ),
+                ),
+                onNotification: (notification) {
+                  _boundary.value = _TrimBoundaries.inside;
+                  _updateControllerIsTrimming(true);
+                  if (notification is ScrollEndNotification) {
+                    _thumbnailPosition = notification.metrics.pixels;
+                    _controllerSeekTo(_rect.left);
+                    _updateControllerIsTrimming(false);
+                    _updateControllerTrim();
+                  }
+                  return true;
                 },
               ),
-            )
-          ]));
-    });
+              GestureDetector(
+                onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                onHorizontalDragStart: _onHorizontalDragStart,
+                onHorizontalDragEnd: _onHorizontalDragEnd,
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([widget.controller, _controller]),
+                  builder: (_, __) {
+                    return CustomPaint(
+                      size: Size.fromHeight(widget.height),
+                      painter: TrimSliderPainter(
+                        _rect,
+                        _getTrimPosition(),
+                        widget.controller.trimStyle,
+                      ),
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
   }
 }
