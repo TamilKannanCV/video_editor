@@ -370,7 +370,6 @@ class VideoEditorController extends ChangeNotifier {
   Future<CoverData> generateCoverThumbnail(
       {int timeMs = 0, int quality = 10}) async {
     final Uint8List? _thumbData = await VideoThumbnail.thumbnailData(
-      imageFormat: ImageFormat.PNG,
       video: (file == null) ? url! : file!.path,
       timeMs: timeMs,
       quality: quality,

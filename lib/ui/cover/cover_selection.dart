@@ -106,12 +106,12 @@ class _CoverSelectionState extends State<CoverSelection>
     for (int i = 0; i < widget.quantity; i++) {
       try {
         final CoverData _bytes = await widget.controller.generateCoverThumbnail(
-            timeMs: (widget.controller.isTrimmmed
-                    ? (eachPart * i) +
-                        widget.controller.startTrim.inMilliseconds
-                    : (eachPart * i))
-                .toInt(),
-            quality: widget.quality);
+          timeMs: (widget.controller.isTrimmmed
+                  ? (eachPart * i) + widget.controller.startTrim.inMilliseconds
+                  : (eachPart * i))
+              .toInt(),
+          quality: widget.quality,
+        );
 
         if (_bytes.thumbData != null) {
           _byteList.add(_bytes);

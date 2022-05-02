@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:video_editor/domain/bloc/controller.dart';
 import 'package:video_editor/domain/entities/transform_data.dart';
 import 'package:video_editor/ui/crop/crop_grid_painter.dart';
@@ -70,14 +71,16 @@ class _ThumbnailSliderState extends State<ThumbnailSlider> {
   }
 
   Stream<List<Uint8List>> _generateThumbnails() async* {
-    final String path = widget.controller.file!.path;
-    final int duration = widget.controller.videoPlayerController.value.duration.inMilliseconds;
+    final String path = (widget.controller.file == null)
+        ? url.toString()
+        : widget.controller.file!.path;
+    final int duration =
+        widget.controller.videoPlayerController.value.duration.inMilliseconds;
     final double eachPart = duration / _thumbnails;
     List<Uint8List> _byteList = [];
     for (int i = 1; i <= _thumbnails; i++) {
       try {
         final Uint8List? _bytes = await VideoThumbnail.thumbnailData(
-          imageFormat: ImageFormat.JPEG,
           video: path,
           timeMs: (eachPart * i).toInt(),
           quality: widget.quality,
